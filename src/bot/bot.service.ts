@@ -27,7 +27,7 @@ export class BotService implements OnModuleInit {
         const text = msg.text.toLowerCase();
         this.logger.log(`Incoming message: ${text} from chat ID: ${chatId}`);
 
-        const greetings = ['hello', 'hi'];
+        const greetings = ['hello', 'hi','/start'];
         if (greetings.includes(text)) {
             const randomIndex = Math.floor(Math.random() * this.funnyStatements.length);
             const response = this.funnyStatements[randomIndex];
