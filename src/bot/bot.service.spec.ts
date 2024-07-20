@@ -1,35 +1,57 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
+import { BotService } from './bot.service';
 import * as TelegramBot from 'node-telegram-bot-api';
 
-@Injectable()
-export class BotService implements OnModuleInit {
-    private bot: TelegramBot;
-    private readonly funnyStatements: string[] = [
-        "Hello there! What, no Hi for me? Why so formal?",
-        "Hi! Did you just 'hello' me? How old-school!",
-        "Hey! What's up? Just 'hello'?",
-        "Hello! Are you a bot too?",
-        "Hi there! Did you just say hello?"
-    ];
+jest.mock('node-telegram-bot-api');
 
-    constructor(private configService: ConfigService) {}
+describe('BotService', () => {
+    let service: BotService;
+    let botSendMessageSpy: jest.SpyInstance;
 
-    onModuleInit() {
-        const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
-        this.bot = new TelegramBot(token, { polling: true });
-        this.bot.on('message', this.handleMessage.bind(this));
-    }
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                BotService,
+                {
+                    provide: ConfigService,
+                    useValue: {
+                        get: jest.fn().mockReturnValue('fake-telegram-bot-token'),
+                    },
+                },
+            ],
+        }).compile();
 
-    private handleMessage(msg: TelegramBot.Message) {
-        const chatId = msg.chat.id;
-        const text = msg.text.toLowerCase();
+        service = module.get<BotService>(BotService);
 
-        if (text === 'hello'|| text === 'hi' ) {
-            const randomIndex = Math.floor(Math.random() * this.funnyStatements.length);
-            this.bot.sendMessage(chatId, this.funnyStatements[randomIndex]);
-        } else {
-            this.bot.sendMessage(chatId, "Sorry, I didn't understand that command.");
-        }
-    }
-}
+        // Manually call onModuleInit to initialize the bot
+        await service.onModuleInit();
+
+        // Mock the sendMessage method of TelegramBot
+        botSendMessageSpy = jest.spyOn((service as any).bot, 'sendMessage').mockImplementation(() => Promise.resolve());
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should be defined', () => {
+        expect(service).toBeDefined();
+    });
+
+    it('should respond with a funny statement on "hello" or "hi"', () => {
+        const message = { chat: { id: 123 }, text: 'hello' };
+        (service as any).handleMessage(message);
+        expect(botSendMessageSpy).toHaveBeenCalledWith(123, expect.any(String));
+
+        const messageHi = { chat: { id: 123 }, text: 'hi' };
+        (service as any).handleMessage(messageHi);
+        expect(botSendMessageSpy).toHaveBeenCalledWith(123, expect.any(String));
+    });
+
+    it('should respond with an error message on unknown command', () => {
+        const message = { chat: { id: 123 }, text: 'unknown' };
+        (service as any).handleMessage(message);
+        expect(botSendMessageSpy).toHaveBeenCalledWith(123, "Sorry, I didn't understand that command.");
+    });
+});

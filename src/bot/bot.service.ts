@@ -1,9 +1,10 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as TelegramBot from 'node-telegram-bot-api';
 
 @Injectable()
 export class BotService implements OnModuleInit {
+    private readonly logger = new Logger(BotService.name);
     private bot: TelegramBot;
     private readonly funnyStatements: string[] = [
         "Hello there! What, no Hi for me? Why so formal?",
@@ -24,12 +25,18 @@ export class BotService implements OnModuleInit {
     private handleMessage(msg: TelegramBot.Message) {
         const chatId = msg.chat.id;
         const text = msg.text.toLowerCase();
+        this.logger.log(`Incoming message: ${text} from chat ID: ${chatId}`);
 
-        if (text === 'hello'|| text === 'hi' ) {
+        const greetings = ['hello', 'hi'];
+        if (greetings.includes(text)) {
             const randomIndex = Math.floor(Math.random() * this.funnyStatements.length);
-            this.bot.sendMessage(chatId, this.funnyStatements[randomIndex]);
+            const response = this.funnyStatements[randomIndex];
+            this.bot.sendMessage(chatId, response);
+            this.logger.log(`Bot response: ${response} to chat ID: ${chatId}`);
         } else {
-            this.bot.sendMessage(chatId, "Sorry, I didn't understand that command.");
+            const response = "Sorry, I didn't understand that command.";
+            this.bot.sendMessage(chatId, response);
+            this.logger.log(`Bot response: ${response} to chat ID: ${chatId}`);
         }
     }
 }
