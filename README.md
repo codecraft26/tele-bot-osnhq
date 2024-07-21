@@ -1,6 +1,7 @@
 # Telegram Bot with NestJS
 
 Deployed link on render - https://tele-bot-osnhq-5mr7.onrender.com/ 
+telegram Bot name - @welcome2626_bot(for test)
 ## Setup Instructions
 
 1. Clone the repository.
