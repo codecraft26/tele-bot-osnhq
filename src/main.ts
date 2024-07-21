@@ -4,7 +4,7 @@ import { Telegraf } from 'telegraf';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const bot = new Telegraf(process.env.BOT_TOKEN);
+  const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
   bot.telegram.setWebhook(`${process.env.APP_URL}/bot${process.env.TELEGRAM_BOT_TOKEN}`)
     .then(() => {
