@@ -14,7 +14,7 @@ async function bootstrap() {
       console.error('Error setting webhook', error);
     });
 
-  app.use(bot.webhookCallback(`/bot${process.env.BOT_TOKEN}`));
+  app.use(bot.webhookCallback(`/bot${process.env.TELEGRAM_BOT_TOKEN}`));
   
   const port = process.env.PORT || 3000;
   await app.listen(port);
